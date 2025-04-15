@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using WebApp.Configuration;
 
 namespace WebApp.Services
 {
@@ -24,48 +25,41 @@ namespace WebApp.Services
             {
                 _logger.LogInformation("Triggering configuration reload on integrated Reverse Proxy");
 
-                // Since the proxy is now integrated, we can directly call the update method
+                // Get the WebApplication instance
                 var app = _serviceProvider.GetRequiredService<WebApplication>();
 
-                // Call the UpdateYarpConfigAsync method using reflection 
-                // (it's defined in Program.cs as a local function)
-                var programType = app.GetType().Assembly.GetTypes()
-                    .FirstOrDefault(t => t.Name == "Program");
-
-                if (programType != null)
-                {
-                    var updateMethod = programType.GetMethod("UpdateYarpConfigAsync",
-                        System.Reflection.BindingFlags.NonPublic |
-                        System.Reflection.BindingFlags.Static);
-
-                    if (updateMethod != null)
-                    {
-                        await (Task)updateMethod.Invoke(null, new object[] { app });
-                        _logger.LogInformation("Successfully reloaded Reverse Proxy configuration");
-                        return true;
-                    }
-                }
-
-                // Fallback to calling the endpoint directly
-                // This might be useful during development or if the reflection approach fails
-                using (var httpClient = new HttpClient())
-                {
-                    var response = await httpClient.GetAsync("http://localhost:8080/reload");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _logger.LogInformation("Successfully reloaded Reverse Proxy configuration via HTTP endpoint");
-                        return true;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Failed to reload Reverse Proxy configuration. Status code: {StatusCode}", response.StatusCode);
-                        return false;
-                    }
-                }
+                // Call the UpdateYarpConfigAsync method directly from ApplicationBuilderExtensions with fully qualified namespace
+                await WebApp.Configuration.ApplicationBuilderExtensions.UpdateYarpConfigAsync(app);
+                _logger.LogInformation("Successfully reloaded Reverse Proxy configuration");
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while triggering Reverse Proxy reload");
+
+                // Try the fallback HTTP approach
+                try
+                {
+                    // This might be useful during development or if the direct approach fails
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetAsync("http://localhost:8080/reload");
+                        if (response.IsSuccessStatusCode)
+                        {
+                            _logger.LogInformation("Successfully reloaded Reverse Proxy configuration via HTTP endpoint");
+                            return true;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to reload Reverse Proxy configuration. Status code: {StatusCode}", response.StatusCode);
+                        }
+                    }
+                }
+                catch (Exception httpEx)
+                {
+                    _logger.LogError(httpEx, "Error occurred while triggering Reverse Proxy reload via HTTP endpoint");
+                }
+
                 return false;
             }
         }

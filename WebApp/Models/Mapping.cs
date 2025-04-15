@@ -8,4 +8,5 @@ public class Mapping
     public string Destination1 { get; set; } = string.Empty;
     public string Destination2 { get; set; } = string.Empty;
     public int ActiveDestination { get; set; } = 1; // 1 for Destination1, 2 for Destination2
+    public bool IsEnabled { get; set; } = true; // Whether this mapping is active in the reverse proxy
 }
