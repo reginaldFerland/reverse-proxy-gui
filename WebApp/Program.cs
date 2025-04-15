@@ -14,4 +14,7 @@ var app = builder.Build();
 // Configure the application
 await app.ConfigureApplicationAsync();
 
+// Ensure SQLitePCL is initialized properly
+SQLitePCL.Batteries_V2.Init();
+
 app.Run();

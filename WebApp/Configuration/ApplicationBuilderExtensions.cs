@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
 using Yarp.ReverseProxy.Configuration;
+using System.IO;
 
 namespace WebApp.Configuration
 {
@@ -28,6 +29,27 @@ namespace WebApp.Configuration
 
         private static void EnsureDatabaseCreated(WebApplication app)
         {
+            // Get the connection string to extract the database path
+            var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
+            if (connectionString != null)
+            {
+                // Extract the database file path from the connection string
+                var dataSourcePrefix = "Data Source=";
+                var dbPathStart = connectionString.IndexOf(dataSourcePrefix);
+                if (dbPathStart >= 0)
+                {
+                    var dbPath = connectionString.Substring(dbPathStart + dataSourcePrefix.Length);
+
+                    // Get the directory path
+                    var directoryPath = Path.GetDirectoryName(dbPath);
+                    if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+                    {
+                        // Create the directory if it doesn't exist
+                        Directory.CreateDirectory(directoryPath);
+                    }
+                }
+            }
+
             using var scope = app.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.EnsureCreated();

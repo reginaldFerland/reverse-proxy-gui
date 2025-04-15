@@ -24,7 +24,7 @@ RUN mkdir -p /app/data
 COPY --from=build /app/webapp ./webapp
 
 # Copy the initial SQLite database if it exists in the source
-COPY WebApp/reverseproxy.db /app/webapp/initial-db.db
+COPY WebApp/reverseproxy.db /app/data/reverseproxy.db
 
 # Set environment variables with default ports
 ENV WEB_PORT=8000 \
@@ -32,3 +32,9 @@ ENV WEB_PORT=8000 \
 
 # Expose the ports
 EXPOSE ${WEB_PORT} ${PROXY_PORT}
+
+# Set working directory to the webapp
+WORKDIR /app/webapp
+
+# Start the application
+ENTRYPOINT ["dotnet", "WebApp.dll"]
