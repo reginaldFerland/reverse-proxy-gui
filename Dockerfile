@@ -14,6 +14,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Create data directory with proper permissions
+RUN mkdir -p /app/data && \
+    chown -R 1000:1000 /app/data
+
 # Expose both the UI and proxy ports
 EXPOSE 8000
 EXPOSE 8080

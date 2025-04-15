@@ -47,6 +47,9 @@ namespace WebApp.Configuration
         {
             try
             {
+                using var scope = app.Services.CreateScope();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
                 // Get the connection string to extract the database path
                 var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
                 if (connectionString != null)
@@ -60,24 +63,48 @@ namespace WebApp.Configuration
 
                         // Get the directory path
                         var directoryPath = Path.GetDirectoryName(dbPath);
-                        if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+                        logger.LogInformation("Database directory path: {DirectoryPath}", directoryPath);
+
+                        if (!string.IsNullOrEmpty(directoryPath))
                         {
                             // Create the directory if it doesn't exist
-                            Directory.CreateDirectory(directoryPath);
+                            if (!Directory.Exists(directoryPath))
+                            {
+                                logger.LogInformation("Creating database directory: {DirectoryPath}", directoryPath);
+                                Directory.CreateDirectory(directoryPath);
+                            }
+
+                            // Ensure the directory is writable
+                            try
+                            {
+                                // Test write permissions by creating a temp file
+                                var testFile = Path.Combine(directoryPath, ".write_test");
+                                File.WriteAllText(testFile, string.Empty);
+                                File.Delete(testFile);
+                                logger.LogInformation("Directory is writable: {DirectoryPath}", directoryPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Directory is not writable: {DirectoryPath}", directoryPath);
+                                throw new InvalidOperationException($"Cannot write to database directory: {directoryPath}", ex);
+                            }
                         }
                     }
                 }
 
-                using var scope = app.Services.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+                logger.LogInformation("Applying database migrations...");
                 // Apply any pending migrations
                 await dbContext.Database.MigrateAsync();
+                logger.LogInformation("Database migrations applied successfully");
 
                 // Seed initial data if no mappings exist
                 if (!await dbContext.Mappings.AnyAsync())
                 {
+                    logger.LogInformation("Seeding initial data...");
                     await SeedInitialDataAsync(dbContext);
+                    logger.LogInformation("Initial data seeded successfully");
                 }
             }
             catch (Exception ex)
