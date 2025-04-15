@@ -1,0 +1,21 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Database files
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Git artifacts
+.git/
+.gitignore
+
+# Visual Studio files
+**/.vs/
+**/*.user
+
+# Node.js artifacts
+**/node_modules/
+**/npm-debug.log

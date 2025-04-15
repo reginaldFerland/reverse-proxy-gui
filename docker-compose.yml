@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  reverse-proxy-gui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # UI port
+      - "8080:8080"  # Proxy port
+    environment:
+      - ASPNETCORE_URLS=http://+:8000;http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - app-data:/app/data
+
+volumes:
+  app-data:
