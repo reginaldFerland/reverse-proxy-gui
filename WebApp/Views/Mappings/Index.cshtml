@@ -4,57 +4,68 @@
     ViewData["Title"] = "Mappings";
 }
 
-<h1>Mappings</h1>
-
-<div class="mb-3">
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Mappings</h1>
+    
+    <div class="mt-4">
+        <a asp-action="Create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Create New
+        </a>
+    </div>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
+<div class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
             <tr>
-                <th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     @Html.DisplayNameFor(model => model.Name)
                 </th>
-                <th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     @Html.DisplayNameFor(model => model.RoutePattern)
                 </th>
-                <th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     @Html.DisplayNameFor(model => model.Destination1)
                 </th>
-                <th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     @Html.DisplayNameFor(model => model.Destination2)
                 </th>
-                <th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     @Html.DisplayNameFor(model => model.ActiveDestination)
                 </th>
-                <th>Actions</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                </th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-white divide-y divide-gray-200">
             @foreach (var item in Model)
             {
-                <tr>
-                    <td>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @Html.DisplayFor(modelItem => item.Name)
                     </td>
-                    <td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @Html.DisplayFor(modelItem => item.RoutePattern)
                     </td>
-                    <td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @Html.DisplayFor(modelItem => item.Destination1)
                     </td>
-                    <td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @Html.DisplayFor(modelItem => item.Destination2)
                     </td>
-                    <td>
-                        @(item.ActiveDestination == 1 ? "Destination 1" : "Destination 2")
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full @(item.ActiveDestination == 1 ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800")">
+                            @(item.ActiveDestination == 1 ? "Destination 1" : "Destination 2")
+                        </span>
                     </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="text-blue-600 hover:text-blue-900">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="text-gray-600 hover:text-gray-900">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="text-red-600 hover:text-red-900">Delete</a>
                     </td>
                 </tr>
             }

@@ -4,57 +4,60 @@
     ViewData["Title"] = "Edit Mapping";
 }
 
-<h1>Edit Mapping</h1>
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Edit Mapping</h1>
+</div>
 
-<hr />
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="RoutePattern" class="form-label"></label>
-                <input asp-for="RoutePattern" class="form-control" />
-                <span asp-validation-for="RoutePattern" class="text-danger"></span>
-                <small class="form-text text-muted">Example: /api/{**catch-all}</small>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Destination1" class="form-label"></label>
-                <input asp-for="Destination1" class="form-control" />
-                <span asp-validation-for="Destination1" class="text-danger"></span>
-                <small class="form-text text-muted">Example: https://api1.example.com</small>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Destination2" class="form-label"></label>
-                <input asp-for="Destination2" class="form-control" />
-                <span asp-validation-for="Destination2" class="text-danger"></span>
-                <small class="form-text text-muted">Example: https://api2.example.com</small>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="ActiveDestination" class="form-label"></label>
-                <select asp-for="ActiveDestination" class="form-select">
-                    <option value="1">Destination 1</option>
-                    <option value="2">Destination 2</option>
-                </select>
-                <span asp-validation-for="ActiveDestination" class="text-danger"></span>
-            </div>
-            
-            <div class="mb-3">
-                <input type="submit" value="Save" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-            </div>
-        </form>
-    </div>
+<div class="bg-white shadow-md rounded-lg p-6 max-w-3xl">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="mb-4 text-sm text-red-600"></div>
+        <input type="hidden" asp-for="Id" />
+        
+        <div class="mb-4">
+            <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Name" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+            <span asp-validation-for="Name" class="mt-1 text-sm text-red-600"></span>
+        </div>
+        
+        <div class="mb-4">
+            <label asp-for="RoutePattern" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="RoutePattern" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+            <span asp-validation-for="RoutePattern" class="mt-1 text-sm text-red-600"></span>
+            <p class="mt-1 text-sm text-gray-500">Example: /api/{**catch-all}</p>
+        </div>
+        
+        <div class="mb-4">
+            <label asp-for="Destination1" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Destination1" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+            <span asp-validation-for="Destination1" class="mt-1 text-sm text-red-600"></span>
+            <p class="mt-1 text-sm text-gray-500">Example: https://api1.example.com</p>
+        </div>
+        
+        <div class="mb-4">
+            <label asp-for="Destination2" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Destination2" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+            <span asp-validation-for="Destination2" class="mt-1 text-sm text-red-600"></span>
+            <p class="mt-1 text-sm text-gray-500">Example: https://api2.example.com</p>
+        </div>
+        
+        <div class="mb-6">
+            <label asp-for="ActiveDestination" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <select asp-for="ActiveDestination" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                <option value="1">Destination 1</option>
+                <option value="2">Destination 2</option>
+            </select>
+            <span asp-validation-for="ActiveDestination" class="mt-1 text-sm text-red-600"></span>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Save
+            </button>
+            <a asp-action="Index" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Back to List
+            </a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
