@@ -11,12 +11,12 @@ RUN dotnet restore
 COPY ReverseProxy/. ./ReverseProxy/
 COPY WebApp/. ./WebApp/
 
-# Build the projects with specific output paths for configuration files
+# Build the projects
 WORKDIR /src/ReverseProxy
-RUN dotnet publish -c Release -o /app/reverseproxy --property:PublishDir=/app/reverseproxy
+RUN dotnet publish -c Release -o /app/reverseproxy
 
 WORKDIR /src/WebApp
-RUN dotnet publish -c Release -o /app/webapp --property:PublishDir=/app/webapp
+RUN dotnet publish -c Release -o /app/webapp
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
