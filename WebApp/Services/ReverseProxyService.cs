@@ -2,38 +2,65 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WebApp.Services
 {
     public class ReverseProxyService
     {
-        private readonly HttpClient _httpClient;
         private readonly ILogger<ReverseProxyService> _logger;
-        private readonly string _reverseProxyUrl;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ReverseProxyService(HttpClient httpClient, IConfiguration configuration, ILogger<ReverseProxyService> logger)
+        public ReverseProxyService(IServiceProvider serviceProvider, ILogger<ReverseProxyService> logger)
         {
-            _httpClient = httpClient;
+            _serviceProvider = serviceProvider;
             _logger = logger;
-            _reverseProxyUrl = configuration["ReverseProxySettings:BaseUrl"] ?? "http://localhost:5000";
         }
 
         public async Task<bool> ReloadConfigurationAsync()
         {
             try
             {
-                _logger.LogInformation("Triggering configuration reload on Reverse Proxy at {Url}", _reverseProxyUrl);
-                var response = await _httpClient.GetAsync($"{_reverseProxyUrl}/reload");
+                _logger.LogInformation("Triggering configuration reload on integrated Reverse Proxy");
 
-                if (response.IsSuccessStatusCode)
+                // Since the proxy is now integrated, we can directly call the update method
+                var app = _serviceProvider.GetRequiredService<WebApplication>();
+
+                // Call the UpdateYarpConfigAsync method using reflection 
+                // (it's defined in Program.cs as a local function)
+                var programType = app.GetType().Assembly.GetTypes()
+                    .FirstOrDefault(t => t.Name == "Program");
+
+                if (programType != null)
                 {
-                    _logger.LogInformation("Successfully reloaded Reverse Proxy configuration");
-                    return true;
+                    var updateMethod = programType.GetMethod("UpdateYarpConfigAsync",
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Static);
+
+                    if (updateMethod != null)
+                    {
+                        await (Task)updateMethod.Invoke(null, new object[] { app });
+                        _logger.LogInformation("Successfully reloaded Reverse Proxy configuration");
+                        return true;
+                    }
                 }
-                else
+
+                // Fallback to calling the endpoint directly
+                // This might be useful during development or if the reflection approach fails
+                using (var httpClient = new HttpClient())
                 {
-                    _logger.LogWarning("Failed to reload Reverse Proxy configuration. Status code: {StatusCode}", response.StatusCode);
-                    return false;
+                    var response = await httpClient.GetAsync("http://localhost:8080/reload");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("Successfully reloaded Reverse Proxy configuration via HTTP endpoint");
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to reload Reverse Proxy configuration. Status code: {StatusCode}", response.StatusCode);
+                        return false;
+                    }
                 }
             }
             catch (Exception ex)
