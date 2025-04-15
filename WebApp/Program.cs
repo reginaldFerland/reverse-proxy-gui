@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
+using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,16 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ??
                     "Data Source=../ReverseProxy/reverseproxy.db"));
+
+// Register HttpClient and ReverseProxyService
+builder.Services.AddHttpClient<ReverseProxyService>();
+builder.Services.AddScoped<ReverseProxyService>();
+
+// Add configuration for ReverseProxySettings if not present
+if (builder.Configuration.GetSection("ReverseProxySettings").GetSection("BaseUrl").Value == null)
+{
+    builder.Configuration["ReverseProxySettings:BaseUrl"] = "http://localhost:5000";
+}
 
 var app = builder.Build();
 

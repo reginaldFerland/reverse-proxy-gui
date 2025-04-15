@@ -7,12 +7,18 @@
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Mappings</h1>
     
-    <div class="mt-4">
+    <div class="mt-4 flex space-x-4">
         <a asp-action="Create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             Create New
+        </a>
+        <a asp-action="ReloadProxyConfig" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            Reload Proxy Configuration
         </a>
     </div>
 </div>
@@ -58,9 +64,14 @@
                         @Html.DisplayFor(modelItem => item.Destination2)
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full @(item.ActiveDestination == 1 ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800")">
-                            @(item.ActiveDestination == 1 ? "Destination 1" : "Destination 2")
-                        </span>
+                        <form asp-action="ToggleDestination" asp-route-id="@item.Id" method="post" class="inline">
+                            <button type="submit" class="flex items-center px-3 py-1 rounded-full transition-colors @(item.ActiveDestination == 1 ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-blue-100 text-blue-800 hover:bg-blue-200")">
+                                <span class="text-xs font-semibold">@(item.ActiveDestination == 1 ? "Destination 1" : "Destination 2")</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                            </button>
+                        </form>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <a asp-action="Edit" asp-route-id="@item.Id" class="text-blue-600 hover:text-blue-900">Edit</a>
