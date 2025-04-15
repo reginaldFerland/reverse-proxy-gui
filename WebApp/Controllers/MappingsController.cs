@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
 using ReverseProxy.Models;
-using WebApp.Services;
 using System.Text.Json;
 using System.Text;
 
@@ -11,12 +10,10 @@ namespace WebApp.Controllers;
 public class MappingsController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly ReverseProxyService _reverseProxyService;
 
-    public MappingsController(ApplicationDbContext context, ReverseProxyService reverseProxyService)
+    public MappingsController(ApplicationDbContext context)
     {
         _context = context;
-        _reverseProxyService = reverseProxyService;
     }
 
     // GET: Mappings
@@ -61,16 +58,6 @@ public class MappingsController : Controller
             _context.Add(mapping);
             await _context.SaveChangesAsync();
 
-            // Trigger reverse proxy reload
-            var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-            if (reloadSuccess)
-            {
-                TempData["SuccessMessage"] = "Mapping created and proxy configuration reloaded successfully.";
-            }
-            else
-            {
-                TempData["WarningMessage"] = "Mapping created but proxy configuration reload failed.";
-            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -112,16 +99,6 @@ public class MappingsController : Controller
                 _context.Update(mapping);
                 await _context.SaveChangesAsync();
 
-                // Trigger reverse proxy reload
-                var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-                if (reloadSuccess)
-                {
-                    TempData["SuccessMessage"] = "Mapping updated and proxy configuration reloaded successfully.";
-                }
-                else
-                {
-                    TempData["WarningMessage"] = "Mapping updated but proxy configuration reload failed.";
-                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -175,16 +152,6 @@ public class MappingsController : Controller
             _context.Mappings.Remove(mapping);
             await _context.SaveChangesAsync();
 
-            // Trigger reverse proxy reload
-            var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-            if (reloadSuccess)
-            {
-                TempData["SuccessMessage"] = "Mapping deleted and proxy configuration reloaded successfully.";
-            }
-            else
-            {
-                TempData["WarningMessage"] = "Mapping deleted but proxy configuration reload failed.";
-            }
         }
 
         return RedirectToAction(nameof(Index));
@@ -207,16 +174,6 @@ public class MappingsController : Controller
         _context.Update(mapping);
         await _context.SaveChangesAsync();
 
-        // Trigger reverse proxy reload
-        var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-        if (reloadSuccess)
-        {
-            TempData["SuccessMessage"] = "Route destination toggled and proxy configuration reloaded successfully.";
-        }
-        else
-        {
-            TempData["WarningMessage"] = "Route destination toggled but proxy configuration reload failed.";
-        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -224,16 +181,7 @@ public class MappingsController : Controller
     // GET: Mappings/ReloadProxyConfig
     public async Task<IActionResult> ReloadProxyConfig()
     {
-        // Trigger reverse proxy reload
-        var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-        if (reloadSuccess)
-        {
-            TempData["SuccessMessage"] = "Proxy configuration reloaded successfully.";
-        }
-        else
-        {
-            TempData["WarningMessage"] = "Failed to reload proxy configuration.";
-        }
+        
 
         return RedirectToAction(nameof(Index));
     }
@@ -292,16 +240,6 @@ public class MappingsController : Controller
 
             await _context.SaveChangesAsync();
 
-            // Trigger reverse proxy reload
-            var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
-            if (reloadSuccess)
-            {
-                TempData["SuccessMessage"] = $"Successfully imported {mappings.Count} mappings and reloaded proxy configuration.";
-            }
-            else
-            {
-                TempData["WarningMessage"] = $"Successfully imported {mappings.Count} mappings but proxy configuration reload failed.";
-            }
 
             return RedirectToAction(nameof(Index));
         }
