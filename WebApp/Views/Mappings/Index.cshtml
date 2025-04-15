@@ -25,16 +25,16 @@
                     @Html.DisplayNameFor(model => model.Name)
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    @Html.DisplayNameFor(model => model.RoutePattern)
+                    @Html.DisplayNameFor(model => model.RoutePattern).ToString().Insert(5, " ")
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    @Html.DisplayNameFor(model => model.Destination1)
+                    @Html.DisplayNameFor(model => model.Destination1).ToString().Insert(11, " ")
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    @Html.DisplayNameFor(model => model.Destination2)
+                    @Html.DisplayNameFor(model => model.Destination2).ToString().Insert(11, " ")
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    @Html.DisplayNameFor(model => model.ActiveDestination)
+                    @Html.DisplayNameFor(model => model.ActiveDestination).ToString().Insert(6, " ")
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
