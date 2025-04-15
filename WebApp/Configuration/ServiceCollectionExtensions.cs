@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
+using WebApp.Services;
+using System;
 
 namespace WebApp.Configuration
 {
@@ -19,6 +21,19 @@ namespace WebApp.Configuration
             // Configure database
             ConfigureDatabase(builder);
 
+            // Configure HTTP client factory for proxy
+            builder.Services.AddHttpClient("ProxyClient", client =>
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "ReverseProxyGui");
+                client.Timeout = TimeSpan.FromSeconds(100);
+            });
+
+            // Add proxy service
+            builder.Services.AddSingleton<ProxyService>();
+
+            // Add a hosted service to load mappings at startup
+            builder.Services.AddHostedService<MappingsLoaderService>();
+
             return builder;
         }
 
@@ -26,7 +41,11 @@ namespace WebApp.Configuration
         {
             builder.WebHost.ConfigureKestrel(serverOptions =>
             {
-                serverOptions.ListenAnyIP(8000); // UI port only
+                // UI port
+                serverOptions.ListenAnyIP(8000);
+
+                // Proxy port
+                serverOptions.ListenAnyIP(8080);
             });
         }
 

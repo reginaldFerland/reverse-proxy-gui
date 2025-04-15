@@ -4,16 +4,19 @@ using ReverseProxy.Data;
 using ReverseProxy.Models;
 using System.Text.Json;
 using System.Text;
+using WebApp.Services;
 
 namespace WebApp.Controllers;
 
 public class MappingsController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly ProxyService _proxyService;
 
-    public MappingsController(ApplicationDbContext context)
+    public MappingsController(ApplicationDbContext context, ProxyService proxyService)
     {
         _context = context;
+        _proxyService = proxyService;
     }
 
     // GET: Mappings
@@ -58,6 +61,8 @@ public class MappingsController : Controller
             _context.Add(mapping);
             await _context.SaveChangesAsync();
 
+            // Reload proxy config
+            await _proxyService.LoadMappingsAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -99,6 +104,8 @@ public class MappingsController : Controller
                 _context.Update(mapping);
                 await _context.SaveChangesAsync();
 
+                // Reload proxy config
+                await _proxyService.LoadMappingsAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -152,6 +159,8 @@ public class MappingsController : Controller
             _context.Mappings.Remove(mapping);
             await _context.SaveChangesAsync();
 
+            // Reload proxy config
+            await _proxyService.LoadMappingsAsync();
         }
 
         return RedirectToAction(nameof(Index));
@@ -174,6 +183,8 @@ public class MappingsController : Controller
         _context.Update(mapping);
         await _context.SaveChangesAsync();
 
+        // Reload proxy config
+        await _proxyService.LoadMappingsAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -181,8 +192,9 @@ public class MappingsController : Controller
     // GET: Mappings/ReloadProxyConfig
     public async Task<IActionResult> ReloadProxyConfig()
     {
+        await _proxyService.LoadMappingsAsync();
+        TempData["SuccessMessage"] = "Proxy configuration reloaded successfully";
         
-
         return RedirectToAction(nameof(Index));
     }
 

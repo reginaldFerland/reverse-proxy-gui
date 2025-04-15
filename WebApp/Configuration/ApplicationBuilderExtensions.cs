@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using WebApp.Middleware;
+using WebApp.Services;
 
 namespace WebApp.Configuration
 {
@@ -21,7 +23,24 @@ namespace WebApp.Configuration
             // Configure routing
             ConfigureRouting(app);
 
+            // Load initial mappings for the proxy
+            await LoadProxyMappingsAsync(app);
+
             return app;
+        }
+
+        private static async Task LoadProxyMappingsAsync(WebApplication app)
+        {
+            try
+            {
+                var proxyService = app.Services.GetRequiredService<ProxyService>();
+                await proxyService.LoadMappingsAsync();
+            }
+            catch (Exception ex)
+            {
+                var logger = app.Services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while loading proxy mappings.");
+            }
         }
 
         private static async Task EnsureDatabaseCreatedAsync(WebApplication app)
@@ -99,12 +118,31 @@ namespace WebApp.Configuration
         private static void ConfigureRouting(WebApplication app)
         {
             // Map controllers for the UI on port 8000
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapWhen(
+                context => context.Connection.LocalPort == 8000,
+                appBuilder =>
+                {
+                    appBuilder.UseRouting();
+                    appBuilder.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllerRoute(
+                            name: "default",
+                            pattern: "{controller=Home}/{action=Index}/{id?}");
+                    });
+                }
+            );
+
+            // Configure proxy for port 8080
+            app.MapWhen(
+                context => context.Connection.LocalPort == 8080,
+                appBuilder =>
+                {
+                    appBuilder.UseReverseProxy();
+                }
+            );
 
             // Add simple status endpoint
-            app.MapGet("/status", () => "Reverse Proxy GUI is running! UI on port 8000");
+            app.MapGet("/status", () => "Reverse Proxy GUI is running! UI on port 8000, Proxy on port 8080");
         }
     }
 }
