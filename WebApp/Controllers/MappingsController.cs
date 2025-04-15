@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
 using ReverseProxy.Models;
 using WebApp.Services;
+using System.Text.Json;
+using System.Text;
 
 namespace WebApp.Controllers;
 
@@ -234,5 +236,79 @@ public class MappingsController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    // GET: Mappings/Export
+    public async Task<IActionResult> Export()
+    {
+        var mappings = await _context.Mappings.ToListAsync();
+        var json = JsonSerializer.Serialize(mappings, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        byte[] bytes = Encoding.UTF8.GetBytes(json);
+        return File(bytes, "application/json", "mappings.json");
+    }
+
+    // GET: Mappings/Import
+    public IActionResult Import()
+    {
+        return View();
+    }
+
+    // POST: Mappings/Import
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Import(IFormFile jsonFile)
+    {
+        if (jsonFile == null || jsonFile.Length == 0)
+        {
+            TempData["WarningMessage"] = "No file was uploaded.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            using var streamReader = new StreamReader(jsonFile.OpenReadStream());
+            var json = await streamReader.ReadToEndAsync();
+            var mappings = JsonSerializer.Deserialize<List<Mapping>>(json);
+
+            if (mappings == null || !mappings.Any())
+            {
+                TempData["WarningMessage"] = "No mappings found in the uploaded file.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Clear existing mappings
+            _context.Mappings.RemoveRange(_context.Mappings);
+
+            // Add new mappings (without preserving IDs)
+            foreach (var mapping in mappings)
+            {
+                mapping.Id = 0; // Reset ID to let the database generate a new one
+                _context.Mappings.Add(mapping);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Trigger reverse proxy reload
+            var reloadSuccess = await _reverseProxyService.ReloadConfigurationAsync();
+            if (reloadSuccess)
+            {
+                TempData["SuccessMessage"] = $"Successfully imported {mappings.Count} mappings and reloaded proxy configuration.";
+            }
+            else
+            {
+                TempData["WarningMessage"] = $"Successfully imported {mappings.Count} mappings but proxy configuration reload failed.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["WarningMessage"] = $"Error importing mappings: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
