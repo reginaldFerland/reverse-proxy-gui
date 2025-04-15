@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
-using Yarp.ReverseProxy.Configuration;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
@@ -21,9 +20,6 @@ namespace WebApp.Configuration
 
             // Configure routing
             ConfigureRouting(app);
-
-            // Configure the reverse proxy
-            await ConfigureReverseProxyAsync(app);
 
             return app;
         }
@@ -96,10 +92,6 @@ namespace WebApp.Configuration
                 app.UseHsts();
             }
 
-            // Add our dynamic routing middleware to the pipeline
-            // This must be before UseRouting
-            app.UseMiddleware<DynamicRoutingMiddleware>();
-
             app.UseStaticFiles();
             app.UseRouting();
         }
@@ -112,136 +104,7 @@ namespace WebApp.Configuration
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
             // Add simple status endpoint
-            app.MapGet("/status", () => "Reverse Proxy GUI is running! UI on port 8000, Proxy on port 8080");
-
-            // Add endpoint to reload the configuration
-            app.MapGet("/reload", async (HttpContext context) =>
-            {
-                await UpdateYarpConfigAsync(app);
-                return "Configuration reloaded successfully!";
-            });
-
-            // Map reverse proxy
-            app.MapReverseProxy();
-        }
-
-        private static async Task ConfigureReverseProxyAsync(WebApplication app)
-        {
-            // Load mappings from database and configure YARP
-            await UpdateYarpConfigAsync(app.Services);
-        }
-
-        /// <summary>
-        /// Updates YARP configuration from database
-        /// </summary>
-        public static async Task UpdateYarpConfigAsync(WebApplication app)
-        {
-            await UpdateYarpConfigAsync(app.Services);
-        }
-
-        /// <summary>
-        /// Updates YARP configuration from database using provided services
-        /// </summary>
-        public static async Task UpdateYarpConfigAsync(IServiceProvider services)
-        {
-            using var scope = services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var configProvider = scope.ServiceProvider.GetRequiredService<InMemoryConfigProvider>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-            // Get all mappings
-            var mappings = await dbContext.Mappings
-                .ToListAsync();
-
-            var routes = new List<RouteConfig>();
-            var clusters = new List<ClusterConfig>();
-
-            logger.LogInformation("Configuring reverse proxy with {count} mappings", mappings.Count);
-
-            // First, create the main catch-all route that will match all requests
-            routes.Add(new RouteConfig
-            {
-                RouteId = "catch-all",
-                ClusterId = "dynamic-destinations",
-                Match = new RouteMatch
-                {
-                    Path = "/{**catch-all}"
-                },
-                Transforms = new List<Dictionary<string, string>>
-                {
-                    // Add a transform to extract path for matching
-                    new Dictionary<string, string>
-                    {
-                        { "PathPattern", "{**catch-all}" },
-                        { "RequestHeaderOriginalPath", "X-Original-Path" }
-                    }
-                }
-            });
-
-            // Create a special cluster for the catch-all route
-            clusters.Add(new ClusterConfig
-            {
-                ClusterId = "dynamic-destinations",
-                Destinations = new Dictionary<string, DestinationConfig>
-                {
-                    // This is a placeholder that will be replaced at runtime
-                    { "default-destination", new DestinationConfig
-                        {
-                            Address = "http://localhost:9999",
-                            Metadata = new Dictionary<string, string>
-                            {
-                                { "dynamic", "true" }
-                            }
-                        }
-                    }
-                },
-                HttpClient = new HttpClientConfig
-                {
-                    DangerousAcceptAnyServerCertificate = true
-                },
-                Metadata = new Dictionary<string, string>
-                {
-                    { "dynamic-routing", "true" },
-                    { "mappings-count", mappings.Count.ToString() }
-                }
-            });
-
-            // Also create individual routes/clusters for each mapping for direct access
-            foreach (var mapping in mappings)
-            {
-                // Determine active destination
-                var destinationUrl = mapping.ActiveDestination == 1
-                    ? mapping.Destination1
-                    : mapping.Destination2;
-
-                var routeId = $"route-{mapping.Id}";
-                var clusterId = $"cluster-{mapping.Id}";
-
-                // Create direct route (useful for testing specific routes)
-                routes.Add(new RouteConfig
-                {
-                    RouteId = routeId,
-                    ClusterId = clusterId,
-                    Match = new RouteMatch
-                    {
-                        Path = mapping.RoutePattern
-                    }
-                });
-
-                // Create cluster
-                clusters.Add(new ClusterConfig
-                {
-                    ClusterId = clusterId,
-                    Destinations = new Dictionary<string, DestinationConfig>
-                    {
-                        { "destination-1", new DestinationConfig { Address = destinationUrl } }
-                    }
-                });
-            }
-
-            // Update the proxy with new configuration
-            await configProvider.UpdateAsync(routes, clusters);
-            logger.LogInformation("Reverse proxy configuration updated successfully");
+            app.MapGet("/status", () => "Reverse Proxy GUI is running! UI on port 8000");
         }
     }
 }

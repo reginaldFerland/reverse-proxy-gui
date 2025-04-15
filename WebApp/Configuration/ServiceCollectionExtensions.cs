@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseProxy.Data;
-using WebApp.Services;
-using Yarp.ReverseProxy.Configuration;
 
 namespace WebApp.Configuration
 {
@@ -21,9 +19,6 @@ namespace WebApp.Configuration
             // Configure database
             ConfigureDatabase(builder);
 
-            // Configure YARP reverse proxy
-            ConfigureReverseProxy(builder);
-
             return builder;
         }
 
@@ -31,8 +26,7 @@ namespace WebApp.Configuration
         {
             builder.WebHost.ConfigureKestrel(serverOptions =>
             {
-                serverOptions.ListenAnyIP(8000); // UI port
-                serverOptions.ListenAnyIP(8080); // Reverse proxy port
+                serverOptions.ListenAnyIP(8000); // UI port only
             });
         }
 
@@ -41,25 +35,6 @@ namespace WebApp.Configuration
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ??
                                 "Data Source=reverseproxy.db"));
-        }
-
-        private static void ConfigureReverseProxy(WebApplicationBuilder builder)
-        {
-            // Add memory-based configuration provider for YARP
-            builder.Services.AddSingleton<InMemoryConfigProvider>();
-
-            // Add YARP reverse proxy services
-            builder.Services.AddReverseProxy()
-                .LoadFromMemory(
-                    routes: Array.Empty<RouteConfig>(),
-                    clusters: Array.Empty<ClusterConfig>()
-                );
-
-            // Add HTTP Forwarder for dynamic routing
-            builder.Services.AddHttpForwarder();
-
-            // Add the reverse proxy service
-            builder.Services.AddScoped<ReverseProxyService>();
         }
     }
 }
