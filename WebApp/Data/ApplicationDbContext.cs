@@ -32,10 +32,6 @@ public class ApplicationDbContext : DbContext
             .Property(m => m.Destination1)
             .IsRequired();
 
-        modelBuilder.Entity<Mapping>()
-            .Property(m => m.IsEnabled)
-            .HasDefaultValue(true);
-
         // Seed some initial data
         modelBuilder.Entity<Mapping>().HasData(
             new Mapping
@@ -45,8 +41,7 @@ public class ApplicationDbContext : DbContext
                 RoutePattern = "/api/{**catch-all}",
                 Destination1 = "https://api1.example.com",
                 Destination2 = "https://api2.example.com",
-                ActiveDestination = 1,
-                IsEnabled = true
+                ActiveDestination = 1
             }
         );
     }

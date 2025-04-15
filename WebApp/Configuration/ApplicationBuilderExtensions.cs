@@ -82,8 +82,7 @@ namespace WebApp.Configuration
                 RoutePattern = "/api/{**catch-all}",
                 Destination1 = "https://api1.example.com",
                 Destination2 = "https://api2.example.com",
-                ActiveDestination = 1,
-                IsEnabled = true
+                ActiveDestination = 1
             });
 
             await dbContext.SaveChangesAsync();
@@ -96,6 +95,10 @@ namespace WebApp.Configuration
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            // Add our dynamic routing middleware to the pipeline
+            // This must be before UseRouting
+            app.UseMiddleware<DynamicRoutingMiddleware>();
 
             app.UseStaticFiles();
             app.UseRouting();
@@ -125,7 +128,7 @@ namespace WebApp.Configuration
         private static async Task ConfigureReverseProxyAsync(WebApplication app)
         {
             // Load mappings from database and configure YARP
-            await UpdateYarpConfigAsync(app);
+            await UpdateYarpConfigAsync(app.Services);
         }
 
         /// <summary>
@@ -133,18 +136,77 @@ namespace WebApp.Configuration
         /// </summary>
         public static async Task UpdateYarpConfigAsync(WebApplication app)
         {
-            using var scope = app.Services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var configProvider = app.Services.GetRequiredService<InMemoryConfigProvider>();
+            await UpdateYarpConfigAsync(app.Services);
+        }
 
-            // Only include enabled mappings
+        /// <summary>
+        /// Updates YARP configuration from database using provided services
+        /// </summary>
+        public static async Task UpdateYarpConfigAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var configProvider = scope.ServiceProvider.GetRequiredService<InMemoryConfigProvider>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            // Get all mappings
             var mappings = await dbContext.Mappings
-                .Where(m => m.IsEnabled)
                 .ToListAsync();
 
             var routes = new List<RouteConfig>();
             var clusters = new List<ClusterConfig>();
 
+            logger.LogInformation("Configuring reverse proxy with {count} mappings", mappings.Count);
+
+            // First, create the main catch-all route that will match all requests
+            routes.Add(new RouteConfig
+            {
+                RouteId = "catch-all",
+                ClusterId = "dynamic-destinations",
+                Match = new RouteMatch
+                {
+                    Path = "/{**catch-all}"
+                },
+                Transforms = new List<Dictionary<string, string>>
+                {
+                    // Add a transform to extract path for matching
+                    new Dictionary<string, string>
+                    {
+                        { "PathPattern", "{**catch-all}" },
+                        { "RequestHeaderOriginalPath", "X-Original-Path" }
+                    }
+                }
+            });
+
+            // Create a special cluster for the catch-all route
+            clusters.Add(new ClusterConfig
+            {
+                ClusterId = "dynamic-destinations",
+                Destinations = new Dictionary<string, DestinationConfig>
+                {
+                    // This is a placeholder that will be replaced at runtime
+                    { "default-destination", new DestinationConfig
+                        {
+                            Address = "http://localhost:9999",
+                            Metadata = new Dictionary<string, string>
+                            {
+                                { "dynamic", "true" }
+                            }
+                        }
+                    }
+                },
+                HttpClient = new HttpClientConfig
+                {
+                    DangerousAcceptAnyServerCertificate = true
+                },
+                Metadata = new Dictionary<string, string>
+                {
+                    { "dynamic-routing", "true" },
+                    { "mappings-count", mappings.Count.ToString() }
+                }
+            });
+
+            // Also create individual routes/clusters for each mapping for direct access
             foreach (var mapping in mappings)
             {
                 // Determine active destination
@@ -155,7 +217,7 @@ namespace WebApp.Configuration
                 var routeId = $"route-{mapping.Id}";
                 var clusterId = $"cluster-{mapping.Id}";
 
-                // Create route
+                // Create direct route (useful for testing specific routes)
                 routes.Add(new RouteConfig
                 {
                     RouteId = routeId,
@@ -179,6 +241,7 @@ namespace WebApp.Configuration
 
             // Update the proxy with new configuration
             await configProvider.UpdateAsync(routes, clusters);
+            logger.LogInformation("Reverse proxy configuration updated successfully");
         }
     }
 }

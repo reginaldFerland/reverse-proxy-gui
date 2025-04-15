@@ -25,11 +25,9 @@ namespace WebApp.Services
             {
                 _logger.LogInformation("Triggering configuration reload on integrated Reverse Proxy");
 
-                // Get the WebApplication instance
-                var app = _serviceProvider.GetRequiredService<WebApplication>();
+                // Call the UpdateYarpConfigAsync method with the service provider
+                await WebApp.Configuration.ApplicationBuilderExtensions.UpdateYarpConfigAsync(_serviceProvider);
 
-                // Call the UpdateYarpConfigAsync method directly from ApplicationBuilderExtensions with fully qualified namespace
-                await WebApp.Configuration.ApplicationBuilderExtensions.UpdateYarpConfigAsync(app);
                 _logger.LogInformation("Successfully reloaded Reverse Proxy configuration");
                 return true;
             }

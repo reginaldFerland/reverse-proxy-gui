@@ -55,6 +55,9 @@ namespace WebApp.Configuration
                     clusters: Array.Empty<ClusterConfig>()
                 );
 
+            // Add HTTP Forwarder for dynamic routing
+            builder.Services.AddHttpForwarder();
+
             // Add the reverse proxy service
             builder.Services.AddScoped<ReverseProxyService>();
         }
