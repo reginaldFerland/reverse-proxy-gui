@@ -1,0 +1,61 @@
+@model Mapping
+
+@{
+    ViewData["Title"] = "Create Mapping";
+}
+
+<h1>Create New Mapping</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="RoutePattern" class="form-label"></label>
+                <input asp-for="RoutePattern" class="form-control" />
+                <span asp-validation-for="RoutePattern" class="text-danger"></span>
+                <small class="form-text text-muted">Example: /api/{**catch-all}</small>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Destination1" class="form-label"></label>
+                <input asp-for="Destination1" class="form-control" />
+                <span asp-validation-for="Destination1" class="text-danger"></span>
+                <small class="form-text text-muted">Example: https://api1.example.com</small>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Destination2" class="form-label"></label>
+                <input asp-for="Destination2" class="form-control" />
+                <span asp-validation-for="Destination2" class="text-danger"></span>
+                <small class="form-text text-muted">Example: https://api2.example.com</small>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="ActiveDestination" class="form-label"></label>
+                <select asp-for="ActiveDestination" class="form-select">
+                    <option value="1">Destination 1</option>
+                    <option value="2">Destination 2</option>
+                </select>
+                <span asp-validation-for="ActiveDestination" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

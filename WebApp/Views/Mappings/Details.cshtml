@@ -1,0 +1,47 @@
+@model Mapping
+
+@{
+    ViewData["Title"] = "Mapping Details";
+}
+
+<h1>Mapping Details</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.RoutePattern)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.RoutePattern)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Destination1)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Destination1)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Destination2)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Destination2)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.ActiveDestination)
+        </dt>
+        <dd class="col-sm-9">
+            @(Model.ActiveDestination == 1 ? "Destination 1" : "Destination 2")
+        </dd>
+    </dl>
+</div>
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

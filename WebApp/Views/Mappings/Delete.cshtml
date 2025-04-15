@@ -1,0 +1,52 @@
+@model Mapping
+
+@{
+    ViewData["Title"] = "Delete Mapping";
+}
+
+<h1>Delete Mapping</h1>
+
+<div class="alert alert-danger">
+    <h4>Are you sure you want to delete this mapping?</h4>
+</div>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.RoutePattern)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.RoutePattern)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Destination1)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Destination1)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Destination2)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Destination2)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.ActiveDestination)
+        </dt>
+        <dd class="col-sm-9">
+            @(Model.ActiveDestination == 1 ? "Destination 1" : "Destination 2")
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
