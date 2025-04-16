@@ -25,12 +25,22 @@ public class ProxyService
 
     public async Task LoadMappingsAsync()
     {
-        // Create a scope to resolve the DbContext
-        using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ReverseProxy.Data.ApplicationDbContext>();
+        try
+        {
+            // Create a scope to resolve the DbContext
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ReverseProxy.Data.ApplicationDbContext>();
 
-        _mappings = await dbContext.Mappings.ToListAsync();
-        _logger.LogInformation("Loaded {Count} route mappings from database", _mappings.Count);
+            _logger.LogInformation("Attempting to load mappings from database...");
+            _mappings = await dbContext.Mappings.ToListAsync();
+            _logger.LogInformation("Loaded {Count} route mappings from database", _mappings.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load mappings from database");
+            // Initialize with empty list to prevent null reference exceptions
+            _mappings = new List<Mapping>();
+        }
     }
 
     public async Task<HttpResponseMessage> ProxyRequestAsync(HttpContext context)

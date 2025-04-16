@@ -15,11 +15,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create data directory with proper permissions
+# Since we're running as root, ensure root has appropriate permissions
 RUN mkdir -p /app/data && \
-    chown -R 1000:1000 /app/data
+    chmod 777 /app/data
 
 # Expose both the UI and proxy ports
 EXPOSE 8000
 EXPOSE 8080
+
+# Set user as root
+USER root
 
 ENTRYPOINT ["dotnet", "WebApp.dll"]

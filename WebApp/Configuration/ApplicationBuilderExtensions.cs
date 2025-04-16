@@ -33,13 +33,25 @@ namespace WebApp.Configuration
         {
             try
             {
+                var logger = app.Services.GetRequiredService<ILogger<Program>>();
+                logger.LogInformation("Starting to load proxy mappings...");
+
                 var proxyService = app.Services.GetRequiredService<ProxyService>();
                 await proxyService.LoadMappingsAsync();
+
+                logger.LogInformation("Proxy mappings loaded successfully");
             }
             catch (Exception ex)
             {
                 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred while loading proxy mappings.");
+                logger.LogError(ex, "An error occurred while loading proxy mappings. Exception type: {ExceptionType}, Message: {ExceptionMessage}",
+                    ex.GetType().Name, ex.Message);
+
+                if (ex.InnerException != null)
+                {
+                    logger.LogError("Inner exception: {InnerExceptionType}, Message: {InnerExceptionMessage}",
+                        ex.InnerException.GetType().Name, ex.InnerException.Message);
+                }
             }
         }
 
@@ -98,14 +110,6 @@ namespace WebApp.Configuration
                 // Apply any pending migrations
                 await dbContext.Database.MigrateAsync();
                 logger.LogInformation("Database migrations applied successfully");
-
-                // Seed initial data if no mappings exist
-                if (!await dbContext.Mappings.AnyAsync())
-                {
-                    logger.LogInformation("Seeding initial data...");
-                    await SeedInitialDataAsync(dbContext);
-                    logger.LogInformation("Initial data seeded successfully");
-                }
             }
             catch (Exception ex)
             {
@@ -113,21 +117,6 @@ namespace WebApp.Configuration
                 logger.LogError(ex, "An error occurred while initializing the database.");
                 throw; // Rethrow to stop startup if database initialization fails
             }
-        }
-
-        private static async Task SeedInitialDataAsync(ApplicationDbContext dbContext)
-        {
-            // Add a default mapping if the database is empty
-            dbContext.Mappings.Add(new ReverseProxy.Models.Mapping
-            {
-                Name = "Default Route",
-                RoutePattern = "/api/{**catch-all}",
-                Destination1 = "https://api1.example.com",
-                Destination2 = "https://api2.example.com",
-                ActiveDestination = 1
-            });
-
-            await dbContext.SaveChangesAsync();
         }
 
         private static void ConfigureMiddleware(WebApplication app)

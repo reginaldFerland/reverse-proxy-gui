@@ -6,13 +6,13 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"  # UI port
-      - "8080:8080"  # Proxy port
+      - "8000:8000" # UI port
+      - "8080:8080" # Proxy port
     environment:
       - ASPNETCORE_URLS=http://+:8000;http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
     volumes:
-      - app-data:/app/data
+      - app-data:/app/data # Mount a volume to persist database data
 
 volumes:
-  app-data:
+  app-data: # This creates a named volume that will persist between container restarts
