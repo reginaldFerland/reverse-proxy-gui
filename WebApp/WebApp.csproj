@@ -17,13 +17,4 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
 
-  <!-- Explicitly set configuration files to be included only in this project's output -->
-  <ItemGroup>
-    <Content Update="appsettings*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Link>webapp-%(Filename)%(Extension)</Link>
-    </Content>
-  </ItemGroup>
-
 </Project>
