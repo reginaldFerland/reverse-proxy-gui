@@ -11,7 +11,7 @@ on:
 env:
   IMAGE_NAME: reverse-proxy-gui
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-  DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY || env.DOCKER_HUB_USERNAME }}/reverse-proxy-gui
+  DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY || secrets.DOCKER_HUB_USERNAME }}/reverse-proxy-gui
 
 jobs:
   build-and-push:
