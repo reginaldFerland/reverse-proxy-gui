@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace ReverseProxy.Migrations
+namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

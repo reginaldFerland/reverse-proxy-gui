@@ -6,7 +6,7 @@ using ReverseProxy.Data;
 
 #nullable disable
 
-namespace ReverseProxy.Migrations
+namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot

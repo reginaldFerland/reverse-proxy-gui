@@ -7,11 +7,11 @@ using ReverseProxy.Data;
 
 #nullable disable
 
-namespace ReverseProxy.Migrations
+namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250415165735_AddIsEnabledProperty")]
-    partial class AddIsEnabledProperty
+    [Migration("20250416001031_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,11 +36,6 @@ namespace ReverseProxy.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -60,7 +55,6 @@ namespace ReverseProxy.Migrations
                             ActiveDestination = 1,
                             Destination1 = "https://api1.example.com",
                             Destination2 = "https://api2.example.com",
-                            IsEnabled = true,
                             Name = "Default Route",
                             RoutePattern = "/api/{**catch-all}"
                         });

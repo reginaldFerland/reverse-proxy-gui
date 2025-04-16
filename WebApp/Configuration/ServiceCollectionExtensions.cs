@@ -18,8 +18,9 @@ namespace WebApp.Configuration
             // Configure MVC
             builder.Services.AddControllersWithViews();
 
-            // Configure database
-            ConfigureDatabase(builder);
+            // Add database context
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Configure HTTP client factory for proxy
             builder.Services.AddHttpClient("ProxyClient", client =>
@@ -47,13 +48,6 @@ namespace WebApp.Configuration
                 // Proxy port
                 serverOptions.ListenAnyIP(8080);
             });
-        }
-
-        private static void ConfigureDatabase(WebApplicationBuilder builder)
-        {
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ??
-                                "Data Source=reverseproxy.db"));
         }
     }
 }
